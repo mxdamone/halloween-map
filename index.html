@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎃 HALLOWEEN 2026 | Boo! 👻🎃</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css" />
+	
+  <!-- script title -->
+  <script>
+  let titleText = "🎃 HALLOWEEN 2026 | Boo! 👻 ";
+  let position = 0;
+
+  function scrollTitle() {
+    document.title = titleText.substring(position) + titleText.substring(0, position);
+    position = (position + 1) % titleText.length;
+    setTimeout(scrollTitle, 200); // Vitesse de défilement
+  }
+
+  scrollTitle();
+</script>
+
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Nosifer', monospace;
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+      color: #FFA500;
+      text-align: center;
+    }
+
+    /* Dégradé sombre haut de page */
+    .header-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 160px;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0));
+      z-index: 100;
+    }
+
+    /* Boîte du titre + compte à rebours */
+    .header-content {
+      position: relative;
+      z-index: 200;
+      display: inline-block;
+      margin-top: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      color: #BCAD21;
+      text-shadow: 2px 2px 5px #000;
+	  font-size: 2em;
+    }
+
+    #countdown {
+      font-size: 1.5em;
+      font-weight: bold;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 2px #000;
+      margin-top: 8px;
+	  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	  display: none;
+    }
+
+    .map-container {
+      position: relative;
+      width: 90%;
+      max-width: 1000px;
+      margin: 10px auto;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+    }
+
+    #map {
+      height: 500px;
+      width: 100%;
+    }
+
+    /* Keep map attribution visible as required by map providers. */
+
+    .popup-animated-text {
+      font-family: 'Nosifer', monospace;
+      font-size: 16px;
+      font-weight: bold;
+      color: #FFA500;
+      text-align: center;
+      text-shadow: 0 0 5px #FF6600, 0 0 10px #FF3300, 0 0 15px #FF0000;
+      animation: flicker 1.2s infinite alternate;
+    }
+
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+      background: #000;
+    }
+
+    .custom-emoji-icon {
+      font-size: 30px;
+      line-height: 30px;
+      text-align: center;
+    }
+
+    /* Filtres visuels */
+    .halloween-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: linear-gradient(135deg, rgba(255,140,0,0.1), rgba(0,0,0,0.4));
+      z-index: 400; /* sous les popups Leaflet */
+    }
+
+    .fog-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 200%;
+      pointer-events: none;
+      background: url('fog-overlay-png-5.png') repeat;
+      opacity: 0.5;
+      animation: fogMove 120s linear infinite;
+      transform: translate(-25%, -25%);
+      z-index: 300;
+    }
+
+    @keyframes fogMove {
+      from { transform: translate(-25%, -25%); }
+      to   { transform: translate(0%, 0%); }
+    }
+	  
+	@media (min-width: 1200px) {
+  #map {
+    height: 75vh; /* Utilise 75% de la hauteur de l'écran */
+  }
+}
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.3em; }
+      #map { height: 600px; }
+    }
+  </style>
+</head>
+<body>
+
+  
+  <div class="header-overlay"></div>
+
+  <div class="header-content">
+    <h1>🎃👻 HALLOWEEN 2026 👻🎃</h1>
+    <div id="countdown"></div>
+  </div>
+
+  <div class="map-container">
+    <div id="map"></div>
+    <div class="halloween-overlay"></div>
+    
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
+
+  <script>
+    // Compte à rebours
+    function updateCountdown() {
+      const now = new Date();
+      const target = new Date(now.getFullYear(), 9, 31, 0, 0, 0);
+      const diff = target - now;
+
+      if (diff <= 0) {
+        document.getElementById('countdown').textContent = "🦇🎃🪦🕷️🪦🎃🦇";
+        clearInterval(timerInterval);
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      document.getElementById('countdown').textContent =
+  `⏳ ${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    const timerInterval = setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // Carte Leaflet
+    const map = L.map('map', {
+      fullscreenControl: true
+    }).setView([50.8439831, 4.4902064], 14);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    }).addTo(map);
+
+    const pumpkinIcon = L.divIcon({
+      className: 'custom-emoji-icon',
+      html: '🎃',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+    });
+
+    const messages = ["Haunted place 👻", "Lieu hanté 👻", "Spookplaats 👻"];
+
+    function createAnimatedMarker(lat, lng, id) {
+      const marker = L.marker([lat, lng], { icon: pumpkinIcon }).addTo(map)
+        .bindPopup(`<div class="popup-animated-text" id="popup-text-${id}">${messages[0]}</div>`)
+        .on('popupopen', () => {
+          let index = 0;
+          const popupText = document.getElementById(`popup-text-${id}`);
+          marker.intervalId = setInterval(() => {
+            index = (index + 1) % messages.length;
+            if (popupText) popupText.textContent = messages[index];
+          }, 2000);
+        })
+        .on('popupclose', () => {
+          clearInterval(marker.intervalId);
+        });
+    }
+
+    // Marqueurs
+    const coords = [
+      [50.8415522, 4.4734438],
+      [50.8428185, 4.4703142],
+      [50.8418486, 4.4919126],
+      [50.8531038, 4.4934903],
+      [50.8399691, 4.4775561],
+      [50.8447588, 4.4838263],
+      [50.8404083, 4.4739770],
+      [50.8552205, 4.4869294], 
+      [50.8444274, 4.473434],
+      [50.8463541, 4.4886999],
+      [50.8507969, 4.4882513],
+      [50.8423668, 4.4949765],
+      [50.8469219, 4.476592],
+      [50.8464083, 4.5005878],
+	  [50.8329988, 4.5046031],
+	  [50.8591103, 4.4850667],
+	  [50.8366235, 4.4927843],
+	  [50.8373800, 4.4949081],
+	  [50.8478007, 4.4896616],
+	  [50.8397248, 4.4804907],
+	  [50.8515291, 4.4799883],
+	  [50.8417896, 4.4853316],
+	  [50.860995, 4.4683306],
+	  [50.8367194, 4.493046],
+	  [50.8368281, 4.4945814],
+	  [50.8394548, 4.4923468],
+      [50.8433786, 4.4855926],
+	  [50.8524884, 4.4815046],
+	  [50.8414906, 4.4795872],
+	  [50.8396198, 4.4907887],
+	  [50.83612, 4.4769022],
+	  [50.8454229, 4.4786062],
+	  [50.8402169, 4.4817071],
+	  [50.8300997, 4.4738472],
+	  [50.8518507, 4.4903493],
+	  [50.8427456, 4.470281],
+	  [50.8437422, 4.4736746],
+	  [50.8339382, 4.4997623],
+	  [50.8320031, 4.4904722],
+	  [50.8404534, 4.4891243],
+    ];
+
+    coords.forEach((coord, index) => {
+      createAnimatedMarker(coord[0], coord[1], index + 1);
+    });
+  </script>
+</body>
+</html>
