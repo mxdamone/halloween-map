@@ -7,22 +7,23 @@
   <title>🎃 HALLOWEEN 2026 | Boo! 👻🎃</title>
 
   <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css" />
-
-  <!-- Titre animé -->
+	
+  <!-- script title -->
   <script>
-    let titleText = "🎃 HALLOWEEN 2026 | Boo! 👻 ";
-    let position = 0;
+  let titleText = "🎃 HALLOWEEN 2026 | Boo! 👻 ";
+  let position = 0;
 
-    function scrollTitle() {
-      document.title = titleText.substring(position) + titleText.substring(0, position);
-      position = (position + 1) % titleText.length;
-      setTimeout(scrollTitle, 200);
-    }
+  function scrollTitle() {
+    document.title = titleText.substring(position) + titleText.substring(0, position);
+    position = (position + 1) % titleText.length;
+    setTimeout(scrollTitle, 200); // Vitesse de défilement
+  }
 
-    scrollTitle();
-  </script>
+  scrollTitle();
+</script>
+
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
@@ -33,13 +34,12 @@
       font-family: 'Nosifer', monospace;
       background-image: url('background.jpg');
       background-size: cover;
-      background-position: center;
       background-attachment: fixed;
-      background-color: #000;
       color: #FFA500;
       text-align: center;
     }
 
+    /* Dégradé sombre haut de page */
     .header-overlay {
       position: absolute;
       top: 0;
@@ -51,6 +51,7 @@
       z-index: 100;
     }
 
+    /* Boîte du titre + compte à rebours */
     .header-content {
       position: relative;
       z-index: 200;
@@ -90,6 +91,8 @@
       width: 100%;
     }
 
+    /* Keep map attribution visible as required by map providers. */
+
     .popup-animated-text {
       font-family: 'Nosifer', monospace;
       font-size: 16px;
@@ -98,11 +101,6 @@
       text-align: center;
       text-shadow: 0 0 5px #FF6600, 0 0 10px #FF3300, 0 0 15px #FF0000;
       animation: flicker 1.2s infinite alternate;
-    }
-
-    @keyframes flicker {
-      from { opacity: 1; }
-      to { opacity: 0.75; }
     }
 
     .leaflet-popup-content-wrapper,
@@ -116,6 +114,7 @@
       text-align: center;
     }
 
+    /* Filtres visuels */
     .halloween-overlay {
       position: absolute;
       top: 0;
@@ -124,7 +123,7 @@
       height: 100%;
       pointer-events: none;
       background: linear-gradient(135deg, rgba(255,140,0,0.1), rgba(0,0,0,0.4));
-      z-index: 400;
+      z-index: 400; /* sous les popups Leaflet */
     }
 
     .fog-overlay {
@@ -143,9 +142,9 @@
 
     @keyframes fogMove {
       from { transform: translate(-25%, -25%); }
-      to { transform: translate(0%, 0%); }
+      to   { transform: translate(0%, 0%); }
     }
-
+	  
     @media (min-width: 1200px) {
       #map {
         height: 75vh;
@@ -158,7 +157,6 @@
     }
   </style>
 </head>
-
 <body>
 
   <div class="header-overlay"></div>
@@ -173,15 +171,20 @@
     <div class="halloween-overlay"></div>
   </div>
 
-  <!-- Scripts Leaflet -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <div id="map-status" role="status" aria-live="polite"
+       style="font: 14px Arial, sans-serif; color: #ffb347; margin: 8px auto 18px; padding: 0 12px;">
+    Chargement des maisons…
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
 
   <script>
-    // Compte à rebours Halloween
+    // Compte à rebours
     function updateCountdown() {
       const now = new Date();
-      const target = new Date(2026, 9, 31, 0, 0, 0);
+      const target = new Date(now.getFullYear(), 9, 31, 0, 0, 0);
       const diff = target - now;
 
       if (diff <= 0) {
@@ -191,7 +194,7 @@
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60 * 60));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
@@ -207,18 +210,16 @@
       fullscreenControl: true
     }).setView([50.8439831, 4.4902064], 14);
 
-    // Fond OpenStreetMap - sans clé API
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
     }).addTo(map);
 
-    // Icône citrouille
     const pumpkinIcon = L.divIcon({
       className: 'custom-emoji-icon',
       html: '🎃',
       iconSize: [30, 30],
-      iconAnchor: [15, 15]
+      iconAnchor: [15, 15],
     });
 
     const messages = [
@@ -228,17 +229,21 @@
     ];
 
     function createAnimatedMarker(lat, lng, id) {
-      const marker = L.marker([lat, lng], { icon: pumpkinIcon })
-        .addTo(map)
+      const marker = L.marker([lat, lng], {
+        icon: pumpkinIcon
+      }).addTo(map)
         .bindPopup(
           `<div class="popup-animated-text" id="popup-text-${id}">${messages[0]}</div>`
         )
         .on('popupopen', () => {
           let index = 0;
+          const popupText = document.getElementById(`popup-text-${id}`);
+
           marker.intervalId = setInterval(() => {
             index = (index + 1) % messages.length;
-            const popupText = document.getElementById(`popup-text-${id}`);
-            if (popupText) popupText.textContent = messages[index];
+            if (popupText) {
+              popupText.textContent = messages[index];
+            }
           }, 2000);
         })
         .on('popupclose', () => {
@@ -246,54 +251,66 @@
         });
     }
 
-    // Maisons participantes - liste 2025 à vérifier pour 2026
-    const coords = [
-      [50.8415522, 4.4734438],
-      [50.8428185, 4.4703142],
-      [50.8418486, 4.4919126],
-      [50.8531038, 4.4934903],
-      [50.8399691, 4.4775561],
-      [50.8447588, 4.4838263],
-      [50.8404083, 4.4739770],
-      [50.8552205, 4.4869294],
-      [50.8444274, 4.473434],
-      [50.8463541, 4.4886999],
-      [50.8507969, 4.4882513],
-      [50.8423668, 4.4949765],
-      [50.8469219, 4.476592],
-      [50.8464083, 4.5005878],
-      [50.8329988, 4.5046031],
-      [50.8591103, 4.4850667],
-      [50.8366235, 4.4927843],
-      [50.8373800, 4.4949081],
-      [50.8478007, 4.4896616],
-      [50.8397248, 4.4804907],
-      [50.8515291, 4.4799883],
-      [50.8417896, 4.4853316],
-      [50.860995, 4.4683306],
-      [50.8367194, 4.493046],
-      [50.8368281, 4.4945814],
-      [50.8394548, 4.4923468],
-      [50.8433786, 4.4855926],
-      [50.8524884, 4.4815046],
-      [50.8414906, 4.4795872],
-      [50.8396198, 4.4907887],
-      [50.83612, 4.4769022],
-      [50.8454229, 4.4786062],
-      [50.8402169, 4.4817071],
-      [50.8300997, 4.4738472],
-      [50.8518507, 4.4903493],
-      [50.8427456, 4.470281],
-      [50.8437422, 4.4736746],
-      [50.8339382, 4.4997623],
-      [50.8320031, 4.4904722],
-      [50.8404534, 4.4891243]
-    ];
+    // ==========================================
+    // CHARGEMENT AUTOMATIQUE DES MAISONS
+    // ==========================================
+    // Les maisons sont chargées depuis maisons.json.
+    // Pour les mettre à jour, remplacer uniquement
+    // ce fichier sur GitHub.
 
-    coords.forEach((coord, index) => {
-      createAnimatedMarker(coord[0], coord[1], index + 1);
-    });
+    async function chargerMaisons() {
+      const status = document.getElementById('map-status');
+
+      try {
+        const response = await fetch('./maisons.json', {
+          cache: 'no-cache'
+        });
+
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+
+        const coords = await response.json();
+
+        if (
+          !Array.isArray(coords) ||
+          !coords.every(point =>
+            Array.isArray(point) &&
+            point.length === 2 &&
+            point.every(Number.isFinite) &&
+            Math.abs(point[0]) <= 90 &&
+            Math.abs(point[1]) <= 180
+          )
+        ) {
+          throw new Error('Format de maisons.json invalide');
+        }
+
+        coords.forEach((coord, index) => {
+          createAnimatedMarker(
+            coord[0],
+            coord[1],
+            index + 1
+          );
+        });
+
+        status.textContent =
+          coords.length + ' maison(s) participante(s)';
+
+      } catch (error) {
+        console.error(
+          'Erreur de chargement des maisons :',
+          error
+        );
+
+        status.textContent =
+          'Impossible de charger maisons.json. ' +
+          'Vérifiez que le fichier est publié ' +
+          'à côté de index.html.';
+      }
+    }
+
+    chargerMaisons();
+
   </script>
-
 </body>
 </html>
