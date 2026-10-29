@@ -9,21 +9,23 @@
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css" />
-	
-  <!-- script title -->
+
+  <!-- Script title -->
   <script>
-  let titleText = "🎃 HALLOWEEN 2026 | Boo! 👻 ";
-  let position = 0;
+    let titleText = "🎃 HALLOWEEN 2026 | Boo! 👻 ";
+    let position = 0;
 
-  function scrollTitle() {
-    document.title = titleText.substring(position) + titleText.substring(0, position);
-    position = (position + 1) % titleText.length;
-    setTimeout(scrollTitle, 200); // Vitesse de défilement
-  }
+    function scrollTitle() {
+      document.title =
+        titleText.substring(position) +
+        titleText.substring(0, position);
 
-  scrollTitle();
-</script>
+      position = (position + 1) % titleText.length;
+      setTimeout(scrollTitle, 200);
+    }
 
+    scrollTitle();
+  </script>
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
@@ -47,7 +49,11 @@
       width: 100%;
       height: 160px;
       pointer-events: none;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0));
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.85),
+        rgba(0,0,0,0)
+      );
       z-index: 100;
     }
 
@@ -99,7 +105,10 @@
       font-weight: bold;
       color: #FFA500;
       text-align: center;
-      text-shadow: 0 0 5px #FF6600, 0 0 10px #FF3300, 0 0 15px #FF0000;
+      text-shadow:
+        0 0 5px #FF6600,
+        0 0 10px #FF3300,
+        0 0 15px #FF0000;
       animation: flicker 1.2s infinite alternate;
     }
 
@@ -122,8 +131,12 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      background: linear-gradient(135deg, rgba(255,140,0,0.1), rgba(0,0,0,0.4));
-      z-index: 400; /* sous les popups Leaflet */
+      background: linear-gradient(
+        135deg,
+        rgba(255,140,0,0.1),
+        rgba(0,0,0,0.4)
+      );
+      z-index: 400;
     }
 
     .fog-overlay {
@@ -141,10 +154,14 @@
     }
 
     @keyframes fogMove {
-      from { transform: translate(-25%, -25%); }
-      to   { transform: translate(0%, 0%); }
+      from {
+        transform: translate(-25%, -25%);
+      }
+      to {
+        transform: translate(0%, 0%);
+      }
     }
-	  
+
     @media (min-width: 1200px) {
       #map {
         height: 75vh;
@@ -152,11 +169,17 @@
     }
 
     @media (max-width: 600px) {
-      h1 { font-size: 1.3em; }
-      #map { height: 600px; }
+      h1 {
+        font-size: 1.3em;
+      }
+
+      #map {
+        height: 600px;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <div class="header-overlay"></div>
@@ -171,8 +194,17 @@
     <div class="halloween-overlay"></div>
   </div>
 
-  <div id="map-status" role="status" aria-live="polite"
-       style="font: 14px Arial, sans-serif; color: #ffb347; margin: 8px auto 18px; padding: 0 12px;">
+  <div
+    id="map-status"
+    role="status"
+    aria-live="polite"
+    style="
+      font: 14px Arial, sans-serif;
+      color: #ffb347;
+      margin: 8px auto 18px;
+      padding: 0 12px;
+    "
+  >
     Chargement des maisons…
   </div>
 
@@ -181,46 +213,148 @@
   <script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
 
   <script>
-    // Compte à rebours
+
+    // ==========================================
+    // COMPTE À REBOURS HALLOWEEN
+    // ==========================================
+
     function updateCountdown() {
       const now = new Date();
-      const target = new Date(now.getFullYear(), 9, 31, 0, 0, 0);
+      const target = new Date(
+        now.getFullYear(),
+        9,
+        31,
+        0,
+        0,
+        0
+      );
+
       const diff = target - now;
 
       if (diff <= 0) {
-        document.getElementById('countdown').textContent = "🦇🎃🪦🕷️🪦🎃🦇";
+        document.getElementById('countdown').textContent =
+          "🦇🎃🪦🕷️🪦🎃🦇";
+
         clearInterval(timerInterval);
         return;
       }
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      const days = Math.floor(
+        diff / (1000 * 60 * 60 * 24)
+      );
+
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) /
+        (1000 * 60 * 60)
+      );
+
+      const minutes = Math.floor(
+        (diff % (1000 * 60 * 60)) /
+        (1000 * 60)
+      );
+
+      const seconds = Math.floor(
+        (diff % (1000 * 60)) / 1000
+      );
 
       document.getElementById('countdown').textContent =
         `⏳ ${days}d ${hours}h ${minutes}m ${seconds}s`;
     }
 
-    const timerInterval = setInterval(updateCountdown, 1000);
+    const timerInterval = setInterval(
+      updateCountdown,
+      1000
+    );
+
     updateCountdown();
 
-    // Carte Leaflet
+
+    // ==========================================
+    // INITIALISATION CARTE LEAFLET
+    // ==========================================
+
     const map = L.map('map', {
       fullscreenControl: true
-    }).setView([50.8439831, 4.4902064], 14);
+    }).setView(
+      [50.8439831, 4.4902064],
+      14
+    );
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-    }).addTo(map);
+    L.tileLayer(
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+      }
+    ).addTo(map);
+
+
+    // ==========================================
+    // EMOJI STANDARD : CITROUILLE
+    // ==========================================
 
     const pumpkinIcon = L.divIcon({
       className: 'custom-emoji-icon',
       html: '🎃',
       iconSize: [30, 30],
-      iconAnchor: [15, 15],
+      iconAnchor: [15, 15]
     });
+
+
+    // ==========================================
+    // EMOJI SPECIAL : FANTOME
+    // ==========================================
+
+    const ghostIcon = L.divIcon({
+      className: 'custom-emoji-icon',
+      html: '👻',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+
+
+    // ==========================================
+    // MAISONS SPECIALES : FANTOMES
+    // ==========================================
+    //
+    // Maison 12 :
+    // 50.8450444, 4.5028040
+    //
+    // Maison 13 :
+    // 50.8444619, 4.4856057
+    //
+    // Ajouter ici d'autres coordonnées
+    // si nécessaire à l'avenir.
+    //
+    // ==========================================
+
+    const ghostHouses = [
+      [50.8450444, 4.5028040],
+      [50.8444619, 4.4856057]
+    ];
+
+
+    // Vérifie si une maison doit être
+    // représentée par un fantôme.
+
+    function isGhostHouse(lat, lng) {
+
+      return ghostHouses.some(
+        ([ghostLat, ghostLng]) =>
+
+          Math.abs(lat - ghostLat) < 0.0000001 &&
+
+          Math.abs(lng - ghostLng) < 0.0000001
+
+      );
+
+    }
+
+
+    // ==========================================
+    // MESSAGES ANIMES MULTILINGUES
+    // ==========================================
 
     const messages = [
       "Haunted place 👻",
@@ -228,77 +362,154 @@
       "Spookplaats 👻"
     ];
 
+
+    // ==========================================
+    // CREATION DES MARQUEURS
+    // ==========================================
+
     function createAnimatedMarker(lat, lng, id) {
-      const marker = L.marker([lat, lng], {
-        icon: pumpkinIcon
-      }).addTo(map)
+
+      // Choix automatique de l'emoji :
+      // Fantôme pour les maisons spéciales.
+      // Citrouille pour toutes les autres.
+
+      const selectedIcon = isGhostHouse(lat, lng)
+        ? ghostIcon
+        : pumpkinIcon;
+
+
+      const marker = L.marker(
+        [lat, lng],
+        {
+          icon: selectedIcon
+        }
+      ).addTo(map)
+
         .bindPopup(
           `<div class="popup-animated-text" id="popup-text-${id}">${messages[0]}</div>`
         )
+
         .on('popupopen', () => {
+
           let index = 0;
-          const popupText = document.getElementById(`popup-text-${id}`);
+
+          const popupText = document.getElementById(
+            `popup-text-${id}`
+          );
 
           marker.intervalId = setInterval(() => {
+
             index = (index + 1) % messages.length;
+
             if (popupText) {
               popupText.textContent = messages[index];
             }
+
           }, 2000);
+
         })
+
         .on('popupclose', () => {
+
           clearInterval(marker.intervalId);
+
         });
+
     }
+
 
     // ==========================================
     // CHARGEMENT AUTOMATIQUE DES MAISONS
     // ==========================================
-    // Les maisons sont chargées depuis maisons.json.
-    // Pour les mettre à jour, remplacer uniquement
-    // ce fichier sur GitHub.
+    //
+    // Les maisons sont chargées depuis
+    // le fichier maisons.json.
+    //
+    // Pour mettre à jour les maisons,
+    // remplacer uniquement ce fichier
+    // sur GitHub.
+    //
+    // Les emojis spéciaux sont gérés
+    // automatiquement par les coordonnées.
+    //
+    // ==========================================
 
     async function chargerMaisons() {
-      const status = document.getElementById('map-status');
+
+      const status = document.getElementById(
+        'map-status'
+      );
 
       try {
-        const response = await fetch('./maisons.json', {
-          cache: 'no-cache'
-        });
+
+        const response = await fetch(
+          './maisons.json',
+          {
+            cache: 'no-cache'
+          }
+        );
 
         if (!response.ok) {
-          throw new Error('HTTP ' + response.status);
+          throw new Error(
+            'HTTP ' + response.status
+          );
         }
 
         const coords = await response.json();
 
+
+        // Vérification du format JSON
+
         if (
           !Array.isArray(coords) ||
+
           !coords.every(point =>
+
             Array.isArray(point) &&
+
             point.length === 2 &&
+
             point.every(Number.isFinite) &&
+
             Math.abs(point[0]) <= 90 &&
+
             Math.abs(point[1]) <= 180
+
           )
         ) {
-          throw new Error('Format de maisons.json invalide');
+
+          throw new Error(
+            'Format de maisons.json invalide'
+          );
+
         }
 
+
+        // Création automatique des marqueurs
+
         coords.forEach((coord, index) => {
+
           createAnimatedMarker(
             coord[0],
             coord[1],
             index + 1
           );
+
         });
 
+
+        // ======================================
+        // COMPTEUR MULTILINGUE DES MAISONS
+        // ======================================
+
         status.textContent =
-  coords.length + ' maisons participantes / \n' +
-  coords.length + ' participating houses / \n' +
-  coords.length + ' deelnemende huizen';
+          coords.length + ' maisons participante / \n' +
+          coords.length + ' participating houses / \n' +
+          coords.length + ' deelnemende huizen';
+
 
       } catch (error) {
+
         console.error(
           'Erreur de chargement des maisons :',
           error
@@ -308,11 +519,19 @@
           'Impossible de charger maisons.json. ' +
           'Vérifiez que le fichier est publié ' +
           'à côté de index.html.';
+
       }
+
     }
+
+
+    // ==========================================
+    // LANCEMENT DU CHARGEMENT
+    // ==========================================
 
     chargerMaisons();
 
   </script>
+
 </body>
 </html>
